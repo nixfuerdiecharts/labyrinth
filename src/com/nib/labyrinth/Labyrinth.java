@@ -1,7 +1,5 @@
 package com.nib.labyrinth;
 
-import java.util.LinkedHashMap;
-
 /**
  * Class to capsule labyrinth functionalities
  */
@@ -9,9 +7,9 @@ public class Labyrinth {
 
 
     /**
-     * Nested LinkedHashMap for storing z,y,x and content of each 3d point in 3d labyrinth
+     * 3d character array for representing the labyrinth structure
      */
-    private LinkedHashMap<Integer, LinkedHashMap<Integer, LinkedHashMap<Integer, String>>> labyrinth;
+    private Character[][][] labyrinth;
     /**
      * Labyrinth dimensions set by user
      */
@@ -21,7 +19,7 @@ public class Labyrinth {
      * Constructor with initialization of nested LinkedHashMap
      */
     public Labyrinth() {
-        this.labyrinth = new LinkedHashMap<>();
+        this.labyrinth = new Character[UserInputHandler.maxDimension][UserInputHandler.maxDimension][UserInputHandler.maxDimension];
     }
 
     public static void main(String[] args) {
@@ -63,22 +61,28 @@ public class Labyrinth {
         this.x = x;
     }
 
+    public void setPoint(int z, int y, int x, char c) {
+        labyrinth[z][y][x] = c;
+    }
+
     // ***********************************
     // Printer methods
     // ***********************************
+
     /**
      * Printer method to print user input rules for labyrinth dimensions
      */
     static void printLabyrinthDimensionRules() {
         System.out.println("Please insert amount of levels, rows, columns (e.g. 3 4 5) and press enter");
-        System.out.printf("All three input must be between %d and %d", UserInputHandler.minDimension, UserInputHandler.maxDimension);
+        System.out.printf("All three input must be between %d and %d%n", UserInputHandler.minDimension, UserInputHandler.maxDimension);
     }
 
     /**
      * Printer method to print user input rules for labyrinth structure
      */
     static void printLabyrinthStructureRules() {
-
+        System.out.println("Please insert the labyrinth Structure");
+        System.out.println("Inputs allowed are '.' (Air), '#' (Stone), 'S' (Start), 'E' (End)");
     }
 
     /**
@@ -86,19 +90,19 @@ public class Labyrinth {
      */
     public void printLabyrinth() {
         //Check if Labyrinth is not set yet
-        if (this.labyrinth.isEmpty()) {
+        if (this.labyrinth[0][0][0] == null) {
             System.out.print("Labyrinth is not set up yet");
             return;
         }
 
-        for (int z : labyrinth.keySet()) {
-            for (int y : labyrinth.get(z).keySet()) {
-                for (int x : labyrinth.get(z).get(y).keySet()) {
-                    System.out.printf("%s", labyrinth.get(z).get(y).get(x));
+        for (int z = 0; z < this.z; z++) {
+            for (int y = 0; y < this.y; y++) {
+                for (int x = 0; x < this.x; x++) {
+                    System.out.print(labyrinth[z][y][x]);
                 }
                 System.out.printf("%n");
             }
-            System.out.printf("%n");
+            System.out.printf("%n%n");
         }
     }
 }

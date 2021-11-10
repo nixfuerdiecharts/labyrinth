@@ -13,62 +13,33 @@ public class UserInputHandler {
     public static int maxDimension = 30;
     /**
      * Reference to labyrinth
+     *
      * @see Labyrinth
      */
     private final Labyrinth labyrinth;
+    /**
+     * Variable to check if start point was set
+     */
+    private boolean startSet;
+    /**
+     * Variable to check if end point was set
+     */
+    private boolean endSet;
 
     /**
      * Constructor for User input handler
+     *
      * @param labyrinth Reference to labyrinth object
      */
     public UserInputHandler(Labyrinth labyrinth) {
         this.labyrinth = labyrinth;
+        this.startSet = false;
+        this.endSet = false;
     }
 
     // ***********************************
     // User input handling and validation
     // ***********************************
-    /**
-     * Input handler for user input
-     */
-    public void readLabyrinth() {
-        //Scanner for reading user inputs
-        Scanner scanner = new Scanner(System.in);
-        String dimensions;
-
-        //Read labyrinth dimensions
-        Labyrinth.printLabyrinthDimensionRules();
-        do {
-            dimensions = "";
-            try {
-                dimensions = scanner.nextLine();
-            } catch (Exception e) {
-                System.out.println("Error while reading labyrinth dimensions");
-                Labyrinth.printLabyrinthDimensionRules();
-            }
-        } while (!parseLabyrinthDimensions(dimensions) || dimensions.isEmpty());
-
-        //Read labyrinth structure line by line for every level in the labyrinth
-        UserInputHandler.clearScreen();
-        Labyrinth.printLabyrinthStructureRules();
-        String labyrinthLine;
-        for (int z = 1; z <= labyrinth.getZ(); z++) {
-            for (int y = 1; y <= labyrinth.getY(); y++) {
-                System.out.printf("Please insert %d. line of the %d. level%n in the Labyrinth (e.g. #.S.#)", y, z);
-                do {
-                    labyrinthLine = "";
-                    try {
-                        labyrinthLine = scanner.nextLine();
-                    } catch (Exception e) {
-                        System.out.println("Error while reading labyrinth structure");
-                        Labyrinth.printLabyrinthStructureRules();
-                    }
-                } while (!parseLabyrinthStructure(labyrinthLine) || labyrinthLine.isEmpty());
-            }
-        }
-
-        UserInputHandler.clearScreen();
-    }
 
     /**
      * Method to examinate whether a string is numeric or not
@@ -96,6 +67,50 @@ public class UserInputHandler {
     }
 
     /**
+     * Input handler for user input
+     */
+    public void readLabyrinth() {
+        //Scanner for reading user inputs
+        Scanner scanner = new Scanner(System.in);
+        String dimensions;
+
+        //Read labyrinth dimensions
+        Labyrinth.printLabyrinthDimensionRules();
+        do {
+            dimensions = "";
+            try {
+                dimensions = scanner.nextLine();
+            } catch (Exception e) {
+                System.out.println("Error while reading labyrinth dimensions");
+                Labyrinth.printLabyrinthDimensionRules();
+            }
+        } while (!parseLabyrinthDimensions(dimensions) || dimensions.isEmpty());
+
+        //Read labyrinth structure line by line for every level in the labyrinth
+        UserInputHandler.clearScreen();
+        Labyrinth.printLabyrinthStructureRules();
+        String labyrinthLine;
+        for (int z = 0; z < labyrinth.getZ(); z++) {
+            for (int y = 0; y < labyrinth.getY(); y++) {
+                do {
+                    System.out.printf("Please insert %d. line of the %d. level in the Labyrinth%n", y + 1, z + 1);
+                    labyrinthLine = "";
+                    try {
+                        labyrinthLine = scanner.nextLine();
+                    } catch (Exception e) {
+                        System.out.println("Error while reading labyrinth structure");
+                        Labyrinth.printLabyrinthStructureRules();
+                    }
+                } while (!parseLabyrinthStructure(labyrinthLine, z, y) || labyrinthLine.isEmpty());
+            }
+        }
+        scanner.close();
+
+        //After everything is read, clear screen for solver output
+        UserInputHandler.clearScreen();
+    }
+
+    /**
      * Method to parse labyrinth dimensions from a given input
      *
      * @param dimensions String containing labyrinth dimensions
@@ -115,8 +130,11 @@ public class UserInputHandler {
             for (String s : split) {
                 if (!isNumeric(s.trim())) {
                     result = false;
+                    break;
                 } else if (!(Integer.parseInt(s.trim()) >= minDimension) || !(Integer.parseInt(s.trim()) <= maxDimension)) {
+                    //Check if all numeric strings are within the dimension rules
                     result = false;
+                    break;
                 }
             }
         }
@@ -132,14 +150,58 @@ public class UserInputHandler {
 
     /**
      * Method to parse labyrinth structure from a given input
+     *
      * @param labyrinthLine A structure line for the labyrinth from user input
      * @return True if the user input corresponds to the input rules
      */
-    private boolean parseLabyrinthStructure(String labyrinthLine) {
+    private boolean parseLabyrinthStructure(String labyrinthLine, int z, int y) {
         boolean result = true;
 
+        //Check if length is the given dimension from earlier
+        if (labyrinthLine.length() != labyrinth.getX()) {
+            result = false;
+            System.out.printf("The given dimensions from earlier only allow %d character(s) per line%n", labyrinth.getX());
+            Labyrinth.printLabyrinthStructureRules();
+        }
 
-        return true;
+        //Check if all characters are ".", "#", "S"/"s" or "E"/"e"
+        for (char c : labyrinthLine.toCharArray()) {
+            if (c != '.' && c != '#' && c != 's' && c != 'S' && c != 'e' && c != 'E') {
+                result = false;
+                break;
+            } else if (c == 's' || c == 'S') {
+                //Check if start point was already set
+                if (startSet) {
+                    result = false;
+                    System.out.println("Start point was already set. There can only be one start point");
+                } else {
+                    startSet = true;
+                }
+            } else if (c == 'e' || c == 'E') {
+                //Check if end point was already set
+                if(endSet) {
+                    result=false;
+                    System.out.println("End point was already set. There can only be one end point");
+                } else {
+                    endSet = true;
+                }
+            }
+        }
+
+        //Line corresponds to the rules --> parse
+        if (result) {
+            for (int x = 0; x < labyrinthLine.length(); x++) {
+                switch (labyrinthLine.charAt(x)) {
+                    case '.' -> labyrinth.setPoint(z, y, x, '.');
+                    case '#' -> labyrinth.setPoint(z, y, x, '#');
+                    case 's', 'S' -> labyrinth.setPoint(z, y, x, 'S');
+                    case 'e', 'E' -> labyrinth.setPoint(z, y, x, 'E');
+                    default -> result = false;
+                }
+            }
+        }
+
+        return result;
     }
 
     // ***********************************
