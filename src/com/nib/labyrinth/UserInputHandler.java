@@ -6,7 +6,7 @@ public class UserInputHandler {
     /**
      * Minimum dimensions for labyrinth
      */
-    public static int minDimension = 1;
+    public static int minDimension = 0;
     /**
      * Maximum dimensions for labyrinth
      */
@@ -40,36 +40,13 @@ public class UserInputHandler {
     // ***********************************
     // User input handling and validation
     // ***********************************
-
     /**
-     * Method to examinate whether a string is numeric or not
+     * Method to handle the user inputs for the dimensions
      *
-     * @param s string to check whether it's numeric or not
-     * @return true if string is numeric
+     * @return True if the dimensions allow another labyrinth structure. False if user does not want to give more labyrinths to the program
      */
-    private static boolean isNumeric(String s) {
+    public boolean readDimensions() {
         boolean result = true;
-
-        if (s.isEmpty()) {
-            result = false;
-        } else if (s.charAt(0) == '-' && s.length() == 1) {
-            result = false;
-        } else {
-            for (int i = 0; i < s.length(); i++) {
-                char c = s.charAt(i);
-                if (!Character.isDigit(c)) {
-                    result = false;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Input handler for user input
-     */
-    public void readLabyrinth() {
         //Scanner for reading user inputs
         Scanner scanner = new Scanner(System.in);
         String dimensions;
@@ -85,6 +62,23 @@ public class UserInputHandler {
                 Labyrinth.printLabyrinthDimensionRules();
             }
         } while (!parseLabyrinthDimensions(dimensions) || dimensions.isEmpty());
+
+
+
+        //Check if end condition of input is reached by the user inputs
+        if (labyrinth.getZ() == 0 && labyrinth.getY() == 0 && labyrinth.getX() == 0) {
+            result = false;
+        }
+
+        return result;
+    }
+
+    /**
+     * Method to handle the user input for the labyrinth structure
+     */
+    public void readLabyrinth() {
+        //Scanner for reading user inputs
+        Scanner scanner = new Scanner(System.in);
 
         //Read labyrinth structure line by line for every level in the labyrinth
         UserInputHandler.clearScreen();
@@ -104,7 +98,7 @@ public class UserInputHandler {
                 } while (!parseLabyrinthStructure(labyrinthLine, z, y) || labyrinthLine.isEmpty());
             }
         }
-        scanner.close();
+
 
         //After everything is read, clear screen for solver output
         UserInputHandler.clearScreen();
@@ -179,8 +173,8 @@ public class UserInputHandler {
                 }
             } else if (c == 'e' || c == 'E') {
                 //Check if end point was already set
-                if(endSet) {
-                    result=false;
+                if (endSet) {
+                    result = false;
                     System.out.println("End point was already set. There can only be one end point");
                 } else {
                     endSet = true;
@@ -204,14 +198,53 @@ public class UserInputHandler {
         return result;
     }
 
+    /**
+     * Method to examinate whether a string is numeric or not
+     *
+     * @param s string to check whether it's numeric or not
+     * @return true if string is numeric
+     */
+    private static boolean isNumeric(String s) {
+        boolean result = true;
+
+        if (s.isEmpty()) {
+            result = false;
+        } else if (s.charAt(0) == '-' && s.length() == 1) {
+            result = false;
+        } else {
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (!Character.isDigit(c)) {
+                    result = false;
+                }
+            }
+        }
+
+        return result;
+    }
+
     // ***********************************
     // Printer methods
     // ***********************************
+
     /**
      * Helper method to clear console screen
      */
     public static void clearScreen() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
+    }
+
+    // ***********************************
+    // Getters and Setters
+    // ***********************************
+
+    /**
+     * Getter for labyrinth
+     *
+     * @return Labyrinth
+     */
+    public Labyrinth getLabyrinth() {
+        return labyrinth;
     }
 }

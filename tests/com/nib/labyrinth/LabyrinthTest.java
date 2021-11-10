@@ -3,6 +3,8 @@ package com.nib.labyrinth;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class LabyrinthTest {
     Labyrinth labyrinth;
 
@@ -55,7 +57,15 @@ class LabyrinthTest {
     }
 
     @Test
-    void setLabyrinth() {
+    void setLabyrinthByTextBlockTest() {
+        labyrinth.setLabyrinthByTextBlock(labyrinth1Structure);
 
+        System.out.printf("X = %d ; Y = %d ; Z = %d", labyrinth.getX(), labyrinth.getY(), labyrinth.getZ());
+
+        assertEquals(3, labyrinth.getZ());
+        assertEquals(3, labyrinth.getY());
+        assertEquals(4, labyrinth.getX());
+
+        labyrinth.printLabyrinth();
     }
 }
