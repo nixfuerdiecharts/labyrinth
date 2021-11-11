@@ -1,7 +1,9 @@
 package com.nib.labyrinth;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Labyrinth Solver class
@@ -33,6 +35,10 @@ public class LabyrinthSolver {
      * Counter for steps in current labyrinth
      */
     private int stepsDone;
+    /**
+     * HashSet to save which coordinates were visited already in labyrinth
+     */
+    private Set<Triple> visitedCoordinates;
 
     /**
      * Constructor
@@ -48,6 +54,7 @@ public class LabyrinthSolver {
      */
     public void setLabyrinths(List<Labyrinth> labyrinths) {
         this.labyrinths = labyrinths;
+        this.visitedCoordinates = new HashSet<>();
     }
 
     /**
@@ -57,6 +64,7 @@ public class LabyrinthSolver {
         for (int i = 0; i < labyrinths.size(); i++) {
             System.out.printf("Solving the %d. labyrinth...%n", i + 1);
             this.hasEnd = false;
+            this.visitedCoordinates.clear();
 
             //Check if there is a Start point in the labyrinth
             if (!findStartAndEnd(labyrinths.get(i))) {
@@ -66,7 +74,7 @@ public class LabyrinthSolver {
             } else {
                 //Labyrinth has start and end, so try to escape
                 this.stepsDone = 0;
-                if (!solveLabyrinth(labyrinths.get(i), stepsDone, z, y, x, z, y, x)) {
+                if (!solveLabyrinth(labyrinths.get(i), stepsDone, z, y, x)) {
                     System.out.println("There is no escape from the labyrinth");
                 } else {
                     System.out.printf("Escaped in %d minute(s)", this.stepsDone);
@@ -85,52 +93,55 @@ public class LabyrinthSolver {
      * @param x         Current X coordinate
      * @return steps needed to solve the labyrinth
      */
-    private boolean solveLabyrinth(Labyrinth labyrinth, int stepsDone, int z, int y, int x, int lastZ, int lastY, int lastX) {
+    private boolean solveLabyrinth(Labyrinth labyrinth, int stepsDone, int z, int y, int x) {
+        //Add current coordinate to visited coordinate
+        this.visitedCoordinates.add(new Triple(z, y, x));
+
         //Check if current position is the end
         if (labyrinth.getPoint(z, y, x) == 'E') {
             this.stepsDone = stepsDone;
             return true;
         }
 
-        if (isStepPossible(labyrinth, z + 1, y, x, lastZ, lastY, lastX)) {
-            //Check if going up is an option
-            if (solveLabyrinth(labyrinth, stepsDone + 1, z + 1, y, x, z, y, x)) {
+        //Check if going up is an option
+        if (isStepPossible(labyrinth, z + 1, y, x)) {
+            if (solveLabyrinth(labyrinth, stepsDone + 1, z + 1, y, x)) {
                 return true;
             }
         }
 
-        if (isStepPossible(labyrinth, z - 1, y, x, lastZ, lastY, lastX)) {
-            //Check if going down is an option
-            if (solveLabyrinth(labyrinth, stepsDone + 1, z - 1, y, x, z, y, x)) {
+        //Check if going down is an option
+        if (isStepPossible(labyrinth, z - 1, y, x)) {
+            if (solveLabyrinth(labyrinth, stepsDone + 1, z - 1, y, x)) {
                 return true;
             }
 
         }
 
-        if (isStepPossible(labyrinth, z, y - 1, x, lastZ, lastY, lastX)) {
-            //Check if going north is an option
-            if (solveLabyrinth(labyrinth, stepsDone + 1, z, y - 1, x, z, y, x)) {
+        //Check if going north is an option
+        if (isStepPossible(labyrinth, z, y - 1, x)) {
+            if (solveLabyrinth(labyrinth, stepsDone + 1, z, y - 1, x)) {
                 return true;
             }
         }
 
-        if (isStepPossible(labyrinth, z, y + 1, x, lastZ, lastY, lastX)) {
-            //Check if going south is an option
-            if (solveLabyrinth(labyrinth, stepsDone + 1, z, y + 1, x, z, y, x)) {
+        //Check if going south is an option
+        if (isStepPossible(labyrinth, z, y + 1, x)) {
+            if (solveLabyrinth(labyrinth, stepsDone + 1, z, y + 1, x)) {
                 return true;
             }
         }
 
-        if (isStepPossible(labyrinth, z, y, x - 1, lastZ, lastY, lastX)) {
-            //Check if going west is an option
-            if (solveLabyrinth(labyrinth, stepsDone + 1, z, y, x - 1, z, y, x)) {
+        //Check if going west is an option
+        if (isStepPossible(labyrinth, z, y, x - 1)) {
+            if (solveLabyrinth(labyrinth, stepsDone + 1, z, y, x - 1)) {
                 return true;
             }
         }
 
-        if (isStepPossible(labyrinth, z, y, x + 1, lastZ, lastY, lastX)) {
-            //Check if going east is an option
-            if (solveLabyrinth(labyrinth, stepsDone + 1, z, y, x + 1, z, y, x)) {
+        //Check if going east is an option
+        if (isStepPossible(labyrinth, z, y, x + 1)) {
+            if (solveLabyrinth(labyrinth, stepsDone + 1, z, y, x + 1)) {
                 return true;
             }
         }
@@ -152,14 +163,14 @@ public class LabyrinthSolver {
      * @param x         X coordinate
      * @return True if step is possible
      */
-    private boolean isStepPossible(Labyrinth labyrinth, int z, int y, int x, int lastZ, int lastY, int lastX) {
+    private boolean isStepPossible(Labyrinth labyrinth, int z, int y, int x) {
         boolean result = true;
 
-        if (labyrinth.getPoint(z, y, x) == null) {
+        if (labyrinth.getPoint(z, y, x) == null) { //Check if coordinate is out of labyrinth bounds
             result = false;
-        } else if (labyrinth.getPoint(z, y, x) == '#') {
+        } else if (labyrinth.getPoint(z, y, x) == '#') { //Check if coordinate is a Stone, hence not visitable
             result = false;
-        } else if (z == lastZ && y == lastY && x == lastX) {
+        } else if (this.visitedCoordinates.contains(new Triple(z, y, x))) { //Check if coordinate was already visited
             result = false;
         }
 
