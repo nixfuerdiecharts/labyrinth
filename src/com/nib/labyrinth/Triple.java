@@ -5,16 +5,7 @@ import java.util.Objects;
 /**
  * Class to save three integer values
  */
-public class Triple {
-    private final int z;
-    private final int y;
-    private final int x;
-
-    public Triple(int z, int y, int x) {
-        this.z = z;
-        this.y = y;
-        this.x = x;
-    }
+public record Triple(int z, int y, int x) {
 
     @Override
     public boolean equals(Object o) {
@@ -27,5 +18,17 @@ public class Triple {
     @Override
     public int hashCode() {
         return Objects.hash(z, y, x);
+    }
+
+    public int getZ() {
+        return z;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getX() {
+        return x;
     }
 }

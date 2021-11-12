@@ -1,9 +1,6 @@
 package com.nib.labyrinth;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Labyrinth Solver class
@@ -45,6 +42,7 @@ public class LabyrinthSolver {
      */
     public LabyrinthSolver() {
         this.labyrinths = new ArrayList<>();
+        this.visitedCoordinates = new HashSet<>();
     }
 
     /**
@@ -54,7 +52,6 @@ public class LabyrinthSolver {
      */
     public void setLabyrinths(List<Labyrinth> labyrinths) {
         this.labyrinths = labyrinths;
-        this.visitedCoordinates = new HashSet<>();
     }
 
     /**
@@ -73,14 +70,79 @@ public class LabyrinthSolver {
                 System.out.println("There is no escape from the labyrinth");
             } else {
                 //Labyrinth has start and end, so try to escape
-                this.stepsDone = 0;
-                if (!solveLabyrinth(labyrinths.get(i), stepsDone, z, y, x)) {
+                this.stepsDone = breadthFirstSearch(labyrinths.get(i), z, y, x);
+                if (this.stepsDone == 0) {
                     System.out.println("There is no escape from the labyrinth");
                 } else {
                     System.out.printf("Escaped in %d minute(s)", this.stepsDone);
                 }
             }
         }
+    }
+
+    /**
+     * Implementation of breadth search algorithm
+     *
+     * @param labyrinth labyrinth to solve
+     * @param z         Z coordinate of start point
+     * @param y         Y coordinate of start point
+     * @param x         X coordinate of start point
+     * @return Amount of steps needed to solve the labyrinth
+     */
+    public int breadthFirstSearch(Labyrinth labyrinth, int z, int y, int x) {
+        //Add current coordinate to visited coordinates
+        this.visitedCoordinates.add(new Triple(z, y, x));
+
+        //Queue for next nodes in labyrinth to visit
+        Queue<Triple> visitingQueue = new ArrayDeque<>();
+        //Add the start to the queue
+        visitingQueue.add(new Triple(z, y, x));
+        visitingQueue.add(new Triple(-1, -1, -1));
+
+        //Initialize stepsCounter
+        int steps = 0;
+        //Helper for keeping track if end was found
+        boolean exitFound = false;
+
+        while (!visitingQueue.isEmpty()) {
+            Triple currentNode = visitingQueue.poll();
+            if (currentNode.getZ() == -1 && currentNode.getY() == -1 && currentNode.getX() == -1) {
+                steps++;
+                if (Objects.requireNonNull(visitingQueue.peek()).getZ() == -1 && Objects.requireNonNull(visitingQueue.peek()).getY() == -1 && Objects.requireNonNull(visitingQueue.peek()).getX() == -1) {
+                    break;
+                } else {
+                    continue;
+                }
+            }
+
+            if (labyrinth.getPoint(currentNode.getZ(), currentNode.getY(), currentNode.getX()) == 'E') {
+                exitFound = true;
+                break;
+            }
+
+            //Find all reachable neighbours of current node
+            List<Triple> currentNodeNeighbours = findNeighbours(labyrinth, currentNode.getZ(), currentNode.getY(), currentNode.getX());
+
+            //Check whether there are any reachable neighbours of current node
+            if (!currentNodeNeighbours.isEmpty()) {
+                //Iterate over all neighbours
+                for (Triple node : currentNodeNeighbours) {
+                    if (!this.visitedCoordinates.contains(node)) {
+                        //Add neighbour to visited coordinates and to the visiting queue
+                        this.visitedCoordinates.add(node);
+                        visitingQueue.add(node);
+                    }
+                }
+                visitingQueue.add(new Triple(-1, -1, -1));
+            }
+        }
+
+        if (exitFound) {
+            return steps;
+        } else {
+            return 0;
+        }
+
     }
 
     /**
@@ -94,7 +156,7 @@ public class LabyrinthSolver {
      * @return steps needed to solve the labyrinth
      */
     private boolean solveLabyrinth(Labyrinth labyrinth, int stepsDone, int z, int y, int x) {
-        //Add current coordinate to visited coordinate
+        //Add current coordinate to visited coordinates
         this.visitedCoordinates.add(new Triple(z, y, x));
 
         //Check if current position is the end
@@ -155,6 +217,44 @@ public class LabyrinthSolver {
     // ***********************************
 
     /**
+     * Helper method to find all reachable neighbours of a node in the labyrinth
+     */
+    private List<Triple> findNeighbours(Labyrinth labyrinth, int z, int y, int x) {
+        List<Triple> reachableNeighboursList = new ArrayList<>();
+        //Check if upper neighbour is reachable
+        if (isStepPossible(labyrinth, z + 1, y, x)) {
+            reachableNeighboursList.add(new Triple(z + 1, y, x));
+        }
+
+        //Check if lower neighbour is reachable
+        if (isStepPossible(labyrinth, z - 1, y, x)) {
+            reachableNeighboursList.add(new Triple(z - 1, y, x));
+        }
+
+        //Check if north neighbour is reachable
+        if (isStepPossible(labyrinth, z, y - 1, x)) {
+            reachableNeighboursList.add(new Triple(z, y - 1, x));
+        }
+
+        //Check if south neighbour is reachable
+        if (isStepPossible(labyrinth, z, y + 1, x)) {
+            reachableNeighboursList.add(new Triple(z, y + 1, x));
+        }
+
+        //Check if west neighbour is reachable
+        if (isStepPossible(labyrinth, z, y, x - 1)) {
+            reachableNeighboursList.add(new Triple(z, y, x - 1));
+        }
+
+        //Check if east neighbour is reachable
+        if (isStepPossible(labyrinth, z, y, x + 1)) {
+            reachableNeighboursList.add(new Triple(z, y, x + 1));
+        }
+
+        return reachableNeighboursList;
+    }
+
+    /**
      * Helper method to check whether a step in the labyrinth is possible or not
      *
      * @param labyrinth Given labyrinth
@@ -190,6 +290,9 @@ public class LabyrinthSolver {
                 for (int x = 0; x < labyrinth.getX(); x++) {
                     if (labyrinth.getPoint(z, y, x) == 'S') {
                         result = true;
+                        this.x = x;
+                        this.y = y;
+                        this.z = z;
                     } else if (labyrinth.getPoint(z, y, x) == 'E') {
                         this.hasEnd = true;
                     }

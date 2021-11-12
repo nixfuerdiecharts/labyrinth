@@ -164,7 +164,7 @@ public class Labyrinth {
             //Check if line is empty --> new level reached
             if (line.trim().isEmpty()) {
                 //Check if after empty line, another labyrinth level is coming
-                if(scanner.hasNextLine()) {
+                if (scanner.hasNextLine()) {
                     z++;
                 }
 
@@ -197,7 +197,7 @@ public class Labyrinth {
         this.setX(x);
         this.setY(y);
         //Since for counting internally z is starting with 0 and human users start count at 1, z must be incremented here
-        this.setZ(z+1);
+        this.setZ(z + 1);
 
         scanner.close();
     }
