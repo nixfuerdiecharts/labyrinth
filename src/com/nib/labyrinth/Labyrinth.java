@@ -13,7 +13,7 @@ public class Labyrinth {
      */
     private final Character[][][] labyrinthStructure;
     /**
-     * Labyrinth dimensions set by user
+     * Labyrinth dimensions set by user (starting at 1)
      */
     private int z, y, x;
 
@@ -156,32 +156,48 @@ public class Labyrinth {
         Scanner scanner = new Scanner(textBlock);
         //Dimensions
         int z = 0, y = 0, x = 0;
-
+        int currentLineNumber = 0;
         //Read line by line, fill the labyrinth and the read the dimensions out of the structure
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            System.out.println(line);
 
             //Check if line is empty --> new level reached
             if (line.trim().isEmpty()) {
-                z++;
+                //Check if after empty line, another labyrinth level is coming
+                if(scanner.hasNextLine()) {
+                    z++;
+                }
 
                 //Check if y is not set yet. Since only valid labyrinths reach this method
                 //--> after first level the y dimension is detected
+                if (y == 0) {
+                    y = currentLineNumber;
+                }
 
-
+                //Reset current line number for next level
+                currentLineNumber = 0;
+                //go to next loop iteration, because empty line is only for human
                 continue;
+            }
+
+            //Set line in labyrinth
+            for (int i = 0; i < line.length(); i++) {
+                labyrinthStructure[z][currentLineNumber][i] = line.charAt(i);
             }
 
             //Check if dimension x is not set yet
             if (x == 0) {
                 x = line.trim().length();
             }
+
+            //Count up line
+            currentLineNumber++;
         }
         //Set the dimensions read by the text block
         this.setX(x);
         this.setY(y);
-        this.setZ(z);
+        //Since for counting internally z is starting with 0 and human users start count at 1, z must be incremented here
+        this.setZ(z+1);
 
         scanner.close();
     }
@@ -223,7 +239,7 @@ public class Labyrinth {
                 }
                 System.out.printf("%n");
             }
-            System.out.printf("%n%n");
+            System.out.printf("%n");
         }
     }
 }

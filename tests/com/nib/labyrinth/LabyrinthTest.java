@@ -60,7 +60,7 @@ class LabyrinthTest {
     void setLabyrinthByTextBlockTest() {
         labyrinth.setLabyrinthByTextBlock(labyrinth1Structure);
 
-        System.out.printf("X = %d ; Y = %d ; Z = %d", labyrinth.getX(), labyrinth.getY(), labyrinth.getZ());
+        System.out.printf("X = %d ; Y = %d ; Z = %d%n", labyrinth.getX(), labyrinth.getY(), labyrinth.getZ());
 
         assertEquals(3, labyrinth.getZ());
         assertEquals(3, labyrinth.getY());
@@ -68,4 +68,6 @@ class LabyrinthTest {
 
         labyrinth.printLabyrinth();
     }
+
+
 }
